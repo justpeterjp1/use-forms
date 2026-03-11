@@ -6,12 +6,14 @@ import { Controller, useFieldArray, useForm } from "react-hook-form"
 import { PROJECT_STATUSES, projectSchema } from "@/schemas/project"
 import { createProject } from "./actions/project"
 import { toast } from "sonner"
-import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
+import { XIcon } from "lucide-react"
 
 
 export default function Home () {
@@ -29,7 +31,9 @@ export default function Home () {
     },
     resolver: zodResolver(projectSchema)
   })
-  useFieldArray({
+  const {fields: users,
+         append: addUser, 
+         remove: removeUser} = useFieldArray({
     control: form.control,
     name: "users"
   })
@@ -50,6 +54,11 @@ export default function Home () {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
           {/* Name */}
+
+          {/* <FormInput 
+          control={form.control}  //This isolated section is for hooking up 
+          name="name"             components/forms to make the page section very much simpler
+          label="Name" /> */}     
           <Controller
           control={form.control}
           name="name"
@@ -171,23 +180,83 @@ export default function Home () {
                     render = {({field: {value, onChange, ...field}, fieldState}) => {
                       return (
                       <Field data-invalid={fieldState.invalid} orientation="horizontal">
-                          <Checkbox
-                  {...field}
-                  id={field.name}
-                  checked={value}
-                  aria-invalid={fieldState.invalid}
-                  onCheckedChange={onChange} />
-                  <FieldContent>
-                    <FieldLabel htmlFor={field.name}>In App</FieldLabel>
-                    {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                    )}
-                  </FieldContent>
+                                  <Checkbox
+                          {...field}
+                          id={field.name}
+                          checked={value}
+                          aria-invalid={fieldState.invalid}
+                          onCheckedChange={onChange} />
+                          <FieldContent>
+                            <FieldLabel htmlFor={field.name}>In App</FieldLabel>
+                            {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                            )}
+                          </FieldContent>
+                          </Field>
+                          )
+                        }}
+                        />
+                </FieldGroup>
+            </FieldSet>
+            <FieldSeparator />
+
+            {/*   */}
+            <FieldSet>
+              <div>
+                <FieldContent>
+                  <FieldLegend variant="label" className="mb-0">
+                    User Email Addresses
+                  </FieldLegend>
+                  <FieldDescription>
+                    Add upto 5 users to this project (including yourself).
+                  </FieldDescription>
+                  {form.formState.errors.users?.root && (
+                    <FieldError errors={[{message: form.formState.errors.users?.root.message}]} />
+                  )}
+                </FieldContent>
+                <Button type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => addUser({email: ""})} >Add User</Button>
+              </div>
+              <FieldGroup>
+                {users.map((user, index) => (
+                     <Controller
+                     key={user.id}
+                control={form.control}
+                name={`users.${index}.email`}
+                render = {({field, fieldState}) => {
+                  return (
+                  <Field data-invalid={fieldState.invalid}>
+                    <InputGroup>
+                <InputGroupInput
+                {...field} 
+                id={field.name} 
+                aria-invalid={fieldState.invalid}
+                aria-label={`User ${index + 1} email`}
+                />
+                <InputGroupAddon align="inline-end">
+                <InputGroupButton 
+                type="button" 
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => removeUser(index)}
+                aria-label={`Remove user ${index + 1}`}
+                >
+                  <XIcon />
+                </InputGroupButton>
+                
+                </InputGroupAddon>
+      
+               </InputGroup>
+                
+                <FieldError errors={[fieldState.error]} />
             </Field>
             )
           }}
             />
-                </FieldGroup>
+                ))}
+              </FieldGroup>
             </FieldSet>
             <Button>Create</Button>
         </FieldGroup>

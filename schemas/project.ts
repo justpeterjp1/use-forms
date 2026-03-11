@@ -12,10 +12,9 @@ export const projectSchema = z.object({
         email: z.boolean(),
         sms: z.boolean(),
         push: z.boolean(),
+    }),
     users: z
            .array(z.object({email: z.email()}))
            .min(1)
            .max(5)
-
-    })
 })
